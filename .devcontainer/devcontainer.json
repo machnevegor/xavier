@@ -1,0 +1,48 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/base:trixie",
+  "features": {
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "22.22.2",
+      "pnpmVersion": "11.24.0"
+    },
+    "./uv": {}
+  },
+  "remoteUser": "vscode",
+  "initializeCommand": ".devcontainer/infra.sh",
+  "runArgs": ["--network=xavier"],
+  "containerEnv": {
+    "XAVIER_DATABASE__HOST": "postgres",
+    "XAVIER_S3__ENDPOINT_URL": "http://rustfs:9000",
+    "XAVIER_TEMPORAL__ADDRESS": "temporal:7233"
+  },
+  "forwardPorts": [3000, 8000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Client"
+    },
+    "8000": {
+      "label": "Server"
+    }
+  },
+  "postCreateCommand": "pnpm -C apps/client i && uv sync --project apps/server",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "-dbaeumer.vscode-eslint",
+        "-ms-python.vscode-pylance",
+        "astral-sh.ty",
+        "biomejs.biome",
+        "bradlc.vscode-tailwindcss",
+        "charliermarsh.ruff",
+        "esbenp.prettier-vscode",
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml"
+      ],
+      "settings": {
+        "telemetry.telemetryLevel": "off"
+      }
+    }
+  }
+}

@@ -5,21 +5,22 @@ $defs:
     properties:
       cwd:
         default: /var/lib/xavier/agent
-        description: 'Empty working directory of the Harness runtime. Must be the
+        description:
+          "Empty working directory of the Harness runtime. Must be the
           same path on every worker:
 
-          Harness stores sessions under a directory derived from it.'
+          Harness stores sessions under a directory derived from it."
         format: path
         title: Cwd
         type: string
       providers:
         additionalProperties:
-          $ref: '#/$defs/ProviderSettings'
+          $ref: "#/$defs/ProviderSettings"
         title: Providers
         type: object
       models:
         items:
-          $ref: '#/$defs/ModelSettings'
+          $ref: "#/$defs/ModelSettings"
         minItems: 1
         title: Models
         type: array
@@ -28,9 +29,9 @@ $defs:
         title: Default Model
         type: string
     required:
-    - providers
-    - models
-    - default_model
+      - providers
+      - models
+      - default_model
     title: AgentSettings
     type: object
   ApiSettings:
@@ -51,7 +52,8 @@ $defs:
         type: integer
       forwarded_allow_ips:
         default: []
-        description: Reverse proxies trusted to set ``X-Forwarded-*`` headers. Empty
+        description:
+          Reverse proxies trusted to set ``X-Forwarded-*`` headers. Empty
           disables the headers.
         items:
           type: string
@@ -101,13 +103,14 @@ $defs:
     properties:
       idle_ttl:
         default: P7D
-        description: Idle time after which a ready chat's workflow completes; a new
+        description:
+          Idle time after which a ready chat's workflow completes; a new
           message restarts it.
         format: duration
         title: Idle Ttl
         type: string
       default_mode:
-        $ref: '#/$defs/Mode'
+        $ref: "#/$defs/Mode"
         default: supervised
       default_budget_usd:
         default: 5.0
@@ -118,7 +121,7 @@ $defs:
     type: object
   ComputerSettings:
     additionalProperties: false
-    description: 'The chat''s Computer: desktop, Chromium and terminal in the workspace.'
+    description: "The chat's Computer: desktop, Chromium and terminal in the workspace."
     properties:
       image:
         default: xavier-desktop:local
@@ -137,10 +140,10 @@ $defs:
         type: number
       memory:
         anyOf:
-        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
-          type: string
-        - minimum: 0
-          type: integer
+          - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+            type: string
+          - minimum: 0
+            type: integer
         default: 2147483648
         title: Memory
       pids:
@@ -184,7 +187,7 @@ $defs:
         type: string
         writeOnly: true
     required:
-    - password
+      - password
     title: DatabaseSettings
     type: object
   ExecuteSettings:
@@ -200,8 +203,8 @@ $defs:
         default: runc
         description: OCI runtime; ``runsc`` when gVisor is installed.
         enum:
-        - runc
-        - runsc
+          - runc
+          - runsc
         title: Runtime
         type: string
       max_duration:
@@ -216,10 +219,10 @@ $defs:
         type: number
       memory:
         anyOf:
-        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
-          type: string
-        - minimum: 0
-          type: integer
+          - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+            type: string
+          - minimum: 0
+            type: integer
         default: 1073741824
         title: Memory
       pids:
@@ -229,19 +232,19 @@ $defs:
         type: integer
       tmp_size:
         anyOf:
-        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
-          type: string
-        - minimum: 0
-          type: integer
+          - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+            type: string
+          - minimum: 0
+            type: integer
         default: 268435456
         description: Size of the ``/tmp`` tmpfs, and of ``/workspace`` for API runs.
         title: Tmp Size
       output_limit:
         anyOf:
-        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
-          type: string
-        - minimum: 0
-          type: integer
+          - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+            type: string
+          - minimum: 0
+            type: integer
         default: 1048576
         description: Kept bytes of stdout and of stderr each.
         title: Output Limit
@@ -254,29 +257,30 @@ $defs:
       level:
         default: INFO
         enum:
-        - DEBUG
-        - INFO
-        - WARNING
-        - ERROR
+          - DEBUG
+          - INFO
+          - WARNING
+          - ERROR
         title: Level
         type: string
       format:
         default: json
-        description: '``json`` for production, ``console`` for development with clickable
-          file references.'
+        description:
+          "``json`` for production, ``console`` for development with clickable
+          file references."
         enum:
-        - json
-        - console
+          - json
+          - console
         title: Format
         type: string
     title: LoggingSettings
     type: object
   Mode:
-    description: 'Chat moderation mode: the effect when no rule matches.'
+    description: "Chat moderation mode: the effect when no rule matches."
     enum:
-    - autonomous
-    - supervised
-    - read_only
+      - autonomous
+      - supervised
+      - read_only
     title: Mode
     type: string
   ModelSettings:
@@ -297,40 +301,40 @@ $defs:
         type: string
       input:
         default:
-        - text
+          - text
         description: Accepted input kinds. Images reach only models with ``image``.
         items:
           enum:
-          - text
-          - image
+            - text
+            - image
           type: string
         title: Input
         type: array
       thinking_format:
         anyOf:
-        - type: string
-        - type: 'null'
+          - type: string
+          - type: "null"
         default: null
         description: Reasoning wire format of the provider (``compat.thinkingFormat``).
         title: Thinking Format
       reasoning_levels:
         additionalProperties:
           anyOf:
-          - type: string
-          - type: 'null'
+            - type: string
+            - type: "null"
         default:
-          'off': null
+          "off": null
         description: Reasoning levels a chat may choose, mapped to the provider value.
         minProperties: 1
         title: Reasoning Levels
         type: object
       pricing_per_mtok:
-        $ref: '#/$defs/PricingSettings'
+        $ref: "#/$defs/PricingSettings"
     required:
-    - id
-    - provider
-    - provider_model
-    - pricing_per_mtok
+      - id
+      - provider
+      - provider_model
+      - pricing_per_mtok
     title: ModelSettings
     type: object
   ObserveSettings:
@@ -338,18 +342,19 @@ $defs:
     description: Polling of Observe sources; source limits may only lower these.
     properties:
       credentials_key:
-        description: 'Fernet key encrypting credential secrets: 32 url-safe base64-encoded
-          bytes.'
+        description:
+          "Fernet key encrypting credential secrets: 32 url-safe base64-encoded
+          bytes."
         format: password
         title: Credentials Key
         type: string
         writeOnly: true
       max_response_bytes:
         anyOf:
-        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
-          type: string
-        - minimum: 0
-          type: integer
+          - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+            type: string
+          - minimum: 0
+            type: integer
         default: 5242880
         title: Max Response Bytes
       fetch_timeout:
@@ -370,7 +375,7 @@ $defs:
         title: Max Fanout
         type: integer
     required:
-    - credentials_key
+      - credentials_key
     title: ObserveSettings
     type: object
   PricingSettings:
@@ -387,15 +392,15 @@ $defs:
         type: number
       cache_read:
         anyOf:
-        - minimum: 0
-          type: number
-        - type: 'null'
+          - minimum: 0
+            type: number
+          - type: "null"
         default: null
         description: Price of cached input tokens. ``null`` charges them as input.
         title: Cache Read
     required:
-    - input
-    - output
+      - input
+      - output
     title: PricingSettings
     type: object
   ProactiveSettings:
@@ -452,8 +457,8 @@ $defs:
         type: string
         writeOnly: true
     required:
-    - base_url
-    - api_key
+      - base_url
+      - api_key
     title: ProviderSettings
     type: object
   RetentionSettings:
@@ -486,8 +491,8 @@ $defs:
     properties:
       endpoint_url:
         anyOf:
-        - type: string
-        - type: 'null'
+          - type: string
+          - type: "null"
         default: null
         description: Custom endpoint such as RustFS. ``null`` selects AWS S3.
         title: Endpoint Url
@@ -499,8 +504,8 @@ $defs:
         default: path
         description: Bucket addressing. Self-hosted endpoints usually require ``path``.
         enum:
-        - path
-        - virtual
+          - path
+          - virtual
         title: Addressing Style
         type: string
       access_key_id:
@@ -525,19 +530,19 @@ $defs:
         type: string
       temporal_payload_ttl_days:
         default: 90
-        description: 'Lifecycle expiration of the Temporal bucket.
+        description: "Lifecycle expiration of the Temporal bucket.
 
 
           Temporal never deletes offloaded payloads, so the bucket expires them. The
           value must exceed
 
-          the longest workflow run plus the namespace retention period.'
+          the longest workflow run plus the namespace retention period."
         minimum: 1
         title: Temporal Payload Ttl Days
         type: integer
     required:
-    - access_key_id
-    - secret_access_key
+      - access_key_id
+      - secret_access_key
     title: S3Settings
     type: object
   TelemetrySettings:
@@ -546,20 +551,22 @@ $defs:
     properties:
       otlp_endpoint:
         anyOf:
-        - type: string
-        - type: 'null'
+          - type: string
+          - type: "null"
         default: null
-        description: OTLP/gRPC collector, e.g. ``http://otel-collector:4317``. ``null``
+        description:
+          OTLP/gRPC collector, e.g. ``http://otel-collector:4317``. ``null``
           exports nothing.
         title: Otlp Endpoint
       api_key:
         anyOf:
-        - format: password
-          type: string
-          writeOnly: true
-        - type: 'null'
+          - format: password
+            type: string
+            writeOnly: true
+          - type: "null"
         default: null
-        description: Ingestion key sent as the ``authorization`` header. ``null`` sends
+        description:
+          Ingestion key sent as the ``authorization`` header. ``null`` sends
           none.
         title: Api Key
       service_name:
@@ -588,7 +595,8 @@ $defs:
         type: string
       payload_size_threshold:
         default: 262144
-        description: Payloads of at least this many bytes are offloaded to the Temporal
+        description:
+          Payloads of at least this many bytes are offloaded to the Temporal
           bucket.
         minimum: 0
         title: Payload Size Threshold
@@ -620,11 +628,13 @@ $defs:
     type: object
   WorkerSettings:
     additionalProperties: false
-    description: 'The ``worker`` process: Temporal worker, MCP gateway and the internal
-      server.'
+    description:
+      "The ``worker`` process: Temporal worker, MCP gateway and the internal
+      server."
     properties:
       id:
-        description: Stable host identity; names the host task queue. Defaults to
+        description:
+          Stable host identity; names the host task queue. Defaults to
           the hostname.
         title: Id
         type: string
@@ -636,13 +646,13 @@ $defs:
         type: integer
       internal_host:
         default: 127.0.0.1
-        description: 'Listen address of the internal server for ``api``.
+        description: "Listen address of the internal server for ``api``.
 
 
           A wildcard address (``0.0.0.0``, ``::``) is advertised to ``api`` as the
           worker id, which must
 
-          then resolve to this host, as a compose service name does.'
+          then resolve to this host, as a compose service name does."
         title: Internal Host
         type: string
       internal_port:
@@ -665,7 +675,7 @@ $defs:
         title: Max Concurrent Activities
         type: integer
     required:
-    - internal_token
+      - internal_token
     title: WorkerSettings
     type: object
   WorkspaceSettings:
@@ -674,17 +684,18 @@ $defs:
     properties:
       idle_ttl:
         default: PT15M
-        description: Idle time after the last tool call that used the workspace before
+        description:
+          Idle time after the last tool call that used the workspace before
           it hibernates.
         format: duration
         title: Idle Ttl
         type: string
       size_limit:
         anyOf:
-        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
-          type: string
-        - minimum: 0
-          type: integer
+          - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+            type: string
+          - minimum: 0
+            type: integer
         default: 2147483648
         description: Limit of both volumes together.
         title: Size Limit
@@ -694,55 +705,55 @@ additionalProperties: false
 description: Complete Xavier configuration.
 properties:
   api:
-    $ref: '#/$defs/ApiSettings'
+    $ref: "#/$defs/ApiSettings"
     default:
       host: 127.0.0.1
       port: 8000
       forwarded_allow_ips: []
   auth:
-    $ref: '#/$defs/AuthSettings'
+    $ref: "#/$defs/AuthSettings"
     default:
       session_ttl: P30D
       session_idle_ttl: P7D
   worker:
-    $ref: '#/$defs/WorkerSettings'
+    $ref: "#/$defs/WorkerSettings"
   database:
-    $ref: '#/$defs/DatabaseSettings'
+    $ref: "#/$defs/DatabaseSettings"
   s3:
-    $ref: '#/$defs/S3Settings'
+    $ref: "#/$defs/S3Settings"
   temporal:
-    $ref: '#/$defs/TemporalSettings'
+    $ref: "#/$defs/TemporalSettings"
     default:
       address: 127.0.0.1:7233
       namespace: default
       task_queue: xavier
       payload_size_threshold: 262144
   logging:
-    $ref: '#/$defs/LoggingSettings'
+    $ref: "#/$defs/LoggingSettings"
     default:
       level: INFO
       format: json
   agent:
-    $ref: '#/$defs/AgentSettings'
+    $ref: "#/$defs/AgentSettings"
   turn:
-    $ref: '#/$defs/TurnSettings'
+    $ref: "#/$defs/TurnSettings"
     default:
       timeout: PT30M
       max_steps: 50
       stop_grace: PT10S
   approval:
-    $ref: '#/$defs/ApprovalSettings'
+    $ref: "#/$defs/ApprovalSettings"
     default:
       hot_wait: PT2M
       ttl: P1D
   chat:
-    $ref: '#/$defs/ChatSettings'
+    $ref: "#/$defs/ChatSettings"
     default:
       idle_ttl: P7D
       default_mode: supervised
       default_budget_usd: 5.0
   proactive:
-    $ref: '#/$defs/ProactiveSettings'
+    $ref: "#/$defs/ProactiveSettings"
     default:
       max_wakeups_per_day: 24
       min_interval: PT10M
@@ -750,12 +761,12 @@ properties:
       max_pending_wakeups: 10
       max_delay: P30D
   workspace:
-    $ref: '#/$defs/WorkspaceSettings'
+    $ref: "#/$defs/WorkspaceSettings"
     default:
       idle_ttl: PT15M
       size_limit: 2147483648
   execute:
-    $ref: '#/$defs/ExecuteSettings'
+    $ref: "#/$defs/ExecuteSettings"
     default:
       image: xavier-sandbox:local
       runtime: runc
@@ -766,7 +777,7 @@ properties:
       tmp_size: 268435456
       output_limit: 1048576
   computer:
-    $ref: '#/$defs/ComputerSettings'
+    $ref: "#/$defs/ComputerSettings"
     default:
       image: xavier-desktop:local
       pool_size: 1
@@ -775,23 +786,23 @@ properties:
       pids: 512
       control_ttl: PT10M
   observe:
-    $ref: '#/$defs/ObserveSettings'
+    $ref: "#/$defs/ObserveSettings"
   retention:
-    $ref: '#/$defs/RetentionSettings'
+    $ref: "#/$defs/RetentionSettings"
     default:
       checkpoints: P30D
       deleted: P30D
       executions: P30D
   telemetry:
-    $ref: '#/$defs/TelemetrySettings'
+    $ref: "#/$defs/TelemetrySettings"
     default:
       otlp_endpoint: null
       service_name: xavier
 required:
-- worker
-- database
-- s3
-- agent
-- observe
+  - worker
+  - database
+  - s3
+  - agent
+  - observe
 title: Settings
 type: object

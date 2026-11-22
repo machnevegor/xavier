@@ -1,6 +1,6 @@
 # Xavier
 
-**Give AI a computer. Let it work.**
+> 🚧 Inspired by Grok Bot. For fun, not for production use.
 
 Xavier gives AI access to a browser, code execution, and website monitoring.
 Hand off tasks and watch the results.

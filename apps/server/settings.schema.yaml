@@ -1,0 +1,787 @@
+$defs:
+  AgentSettings:
+    additionalProperties: false
+    description: Agent runtime and models.
+    properties:
+      cwd:
+        default: /var/lib/xavier/agent
+        description: 'Empty working directory of the Harness runtime. Must be the
+          same path on every worker:
+
+          Harness stores sessions under a directory derived from it.'
+        format: path
+        title: Cwd
+        type: string
+      providers:
+        additionalProperties:
+          $ref: '#/$defs/ProviderSettings'
+        title: Providers
+        type: object
+      models:
+        items:
+          $ref: '#/$defs/ModelSettings'
+        minItems: 1
+        title: Models
+        type: array
+      default_model:
+        description: Model of new chats; an ``id`` from ``models``.
+        title: Default Model
+        type: string
+    required:
+    - providers
+    - models
+    - default_model
+    title: AgentSettings
+    type: object
+  ApiSettings:
+    additionalProperties: false
+    description: HTTP server of the ``api`` process.
+    properties:
+      host:
+        default: 127.0.0.1
+        description: Listen address.
+        title: Host
+        type: string
+      port:
+        default: 8000
+        description: Listen port.
+        maximum: 65535
+        minimum: 1
+        title: Port
+        type: integer
+      forwarded_allow_ips:
+        default: []
+        description: Reverse proxies trusted to set ``X-Forwarded-*`` headers. Empty
+          disables the headers.
+        items:
+          type: string
+        title: Forwarded Allow Ips
+        type: array
+    title: ApiSettings
+    type: object
+  ApprovalSettings:
+    additionalProperties: false
+    description: Operator decisions on actions.
+    properties:
+      hot_wait:
+        default: PT2M
+        description: Time a tool call waits for a decision before the turn is suspended.
+        format: duration
+        title: Hot Wait
+        type: string
+      ttl:
+        default: P1D
+        description: Time a suspended action waits for a decision before it expires.
+        format: duration
+        title: Ttl
+        type: string
+    title: ApprovalSettings
+    type: object
+  AuthSettings:
+    additionalProperties: false
+    description: Sign-in sessions of users; manage users with ``python -m src users``.
+    properties:
+      session_ttl:
+        default: P30D
+        description: Time after sign-in when a session ends regardless of use.
+        format: duration
+        title: Session Ttl
+        type: string
+      session_idle_ttl:
+        default: P7D
+        description: Time without requests after which a session ends.
+        format: duration
+        title: Session Idle Ttl
+        type: string
+    title: AuthSettings
+    type: object
+  ChatSettings:
+    additionalProperties: false
+    description: Chat defaults and lifetime.
+    properties:
+      idle_ttl:
+        default: P7D
+        description: Idle time after which a ready chat's workflow completes; a new
+          message restarts it.
+        format: duration
+        title: Idle Ttl
+        type: string
+      default_mode:
+        $ref: '#/$defs/Mode'
+        default: supervised
+      default_budget_usd:
+        default: 5.0
+        minimum: 0
+        title: Default Budget Usd
+        type: number
+    title: ChatSettings
+    type: object
+  ComputerSettings:
+    additionalProperties: false
+    description: 'The chat''s Computer: desktop, Chromium and terminal in the workspace.'
+    properties:
+      image:
+        default: xavier-desktop:local
+        title: Image
+        type: string
+      pool_size:
+        default: 1
+        description: Ready Computers with empty volumes this host keeps for new workspaces.
+        minimum: 0
+        title: Pool Size
+        type: integer
+      cpus:
+        default: 2.0
+        exclusiveMinimum: 0
+        title: Cpus
+        type: number
+      memory:
+        anyOf:
+        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+          type: string
+        - minimum: 0
+          type: integer
+        default: 2147483648
+        title: Memory
+      pids:
+        default: 512
+        minimum: 64
+        title: Pids
+        type: integer
+      control_ttl:
+        default: PT10M
+        description: Lease of user control; renewed while the control screen is open.
+        format: duration
+        title: Control Ttl
+        type: string
+    title: ComputerSettings
+    type: object
+  DatabaseSettings:
+    additionalProperties: false
+    description: PostgreSQL connection of the application database.
+    properties:
+      host:
+        default: 127.0.0.1
+        title: Host
+        type: string
+      port:
+        default: 5432
+        maximum: 65535
+        minimum: 1
+        title: Port
+        type: integer
+      name:
+        default: xavier
+        title: Name
+        type: string
+      user:
+        default: xavier
+        title: User
+        type: string
+      password:
+        format: password
+        title: Password
+        type: string
+        writeOnly: true
+    required:
+    - password
+    title: DatabaseSettings
+    type: object
+  ExecuteSettings:
+    additionalProperties: false
+    description: Isolated code runs.
+    properties:
+      image:
+        default: xavier-sandbox:local
+        description: Image of runs and of the workspace holder.
+        title: Image
+        type: string
+      runtime:
+        default: runc
+        description: OCI runtime; ``runsc`` when gVisor is installed.
+        enum:
+        - runc
+        - runsc
+        title: Runtime
+        type: string
+      max_duration:
+        default: PT10M
+        format: duration
+        title: Max Duration
+        type: string
+      cpus:
+        default: 1.0
+        exclusiveMinimum: 0
+        title: Cpus
+        type: number
+      memory:
+        anyOf:
+        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+          type: string
+        - minimum: 0
+          type: integer
+        default: 1073741824
+        title: Memory
+      pids:
+        default: 256
+        minimum: 16
+        title: Pids
+        type: integer
+      tmp_size:
+        anyOf:
+        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+          type: string
+        - minimum: 0
+          type: integer
+        default: 268435456
+        description: Size of the ``/tmp`` tmpfs, and of ``/workspace`` for API runs.
+        title: Tmp Size
+      output_limit:
+        anyOf:
+        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+          type: string
+        - minimum: 0
+          type: integer
+        default: 1048576
+        description: Kept bytes of stdout and of stderr each.
+        title: Output Limit
+    title: ExecuteSettings
+    type: object
+  LoggingSettings:
+    additionalProperties: false
+    description: Process logging.
+    properties:
+      level:
+        default: INFO
+        enum:
+        - DEBUG
+        - INFO
+        - WARNING
+        - ERROR
+        title: Level
+        type: string
+      format:
+        default: json
+        description: '``json`` for production, ``console`` for development with clickable
+          file references.'
+        enum:
+        - json
+        - console
+        title: Format
+        type: string
+    title: LoggingSettings
+    type: object
+  Mode:
+    description: 'Chat moderation mode: the effect when no rule matches.'
+    enum:
+    - autonomous
+    - supervised
+    - read_only
+    title: Mode
+    type: string
+  ModelSettings:
+    additionalProperties: false
+    description: A model offered to chats.
+    properties:
+      id:
+        description: Identifier chats refer to.
+        title: Id
+        type: string
+      provider:
+        description: Key in ``agent.providers``.
+        title: Provider
+        type: string
+      provider_model:
+        description: Model name sent to the provider.
+        title: Provider Model
+        type: string
+      input:
+        default:
+        - text
+        description: Accepted input kinds. Images reach only models with ``image``.
+        items:
+          enum:
+          - text
+          - image
+          type: string
+        title: Input
+        type: array
+      thinking_format:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: Reasoning wire format of the provider (``compat.thinkingFormat``).
+        title: Thinking Format
+      reasoning_levels:
+        additionalProperties:
+          anyOf:
+          - type: string
+          - type: 'null'
+        default:
+          'off': null
+        description: Reasoning levels a chat may choose, mapped to the provider value.
+        minProperties: 1
+        title: Reasoning Levels
+        type: object
+      pricing_per_mtok:
+        $ref: '#/$defs/PricingSettings'
+    required:
+    - id
+    - provider
+    - provider_model
+    - pricing_per_mtok
+    title: ModelSettings
+    type: object
+  ObserveSettings:
+    additionalProperties: false
+    description: Polling of Observe sources; source limits may only lower these.
+    properties:
+      credentials_key:
+        description: 'Fernet key encrypting credential secrets: 32 url-safe base64-encoded
+          bytes.'
+        format: password
+        title: Credentials Key
+        type: string
+        writeOnly: true
+      max_response_bytes:
+        anyOf:
+        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+          type: string
+        - minimum: 0
+          type: integer
+        default: 5242880
+        title: Max Response Bytes
+      fetch_timeout:
+        default: PT30S
+        format: duration
+        title: Fetch Timeout
+        type: string
+      max_depth:
+        default: 3
+        description: Levels of child resources below a source.
+        minimum: 0
+        title: Max Depth
+        type: integer
+      max_fanout:
+        default: 100
+        description: Child resources one resource may enumerate.
+        minimum: 1
+        title: Max Fanout
+        type: integer
+    required:
+    - credentials_key
+    title: ObserveSettings
+    type: object
+  PricingSettings:
+    additionalProperties: false
+    description: Model prices in USD per million tokens.
+    properties:
+      input:
+        minimum: 0
+        title: Input
+        type: number
+      output:
+        minimum: 0
+        title: Output
+        type: number
+      cache_read:
+        anyOf:
+        - minimum: 0
+          type: number
+        - type: 'null'
+        default: null
+        description: Price of cached input tokens. ``null`` charges them as input.
+        title: Cache Read
+    required:
+    - input
+    - output
+    title: PricingSettings
+    type: object
+  ProactiveSettings:
+    additionalProperties: false
+    description: Limits of turns the agent starts itself in chats with Proactive mode.
+    properties:
+      max_wakeups_per_day:
+        default: 24
+        description: Turns of one chat started by wakeups or events in a sliding day.
+        minimum: 1
+        title: Max Wakeups Per Day
+        type: integer
+      min_interval:
+        default: PT10M
+        description: Least time between the starts of two such turns.
+        format: duration
+        title: Min Interval
+        type: string
+      budget_usd_per_wake:
+        default: 0.5
+        description: What one such turn may spend at most, within the chat budget.
+        minimum: 0
+        title: Budget Usd Per Wake
+        type: number
+      max_pending_wakeups:
+        default: 10
+        minimum: 1
+        title: Max Pending Wakeups
+        type: integer
+      max_delay:
+        default: P30D
+        description: Farthest a wakeup may be scheduled.
+        format: duration
+        title: Max Delay
+        type: string
+    title: ProactiveSettings
+    type: object
+  ProviderSettings:
+    additionalProperties: false
+    description: An LLM provider reached through the Harness ``llm-pi-ai`` plugin.
+    properties:
+      api:
+        const: openai-completions
+        default: openai-completions
+        description: Wire protocol of the provider.
+        title: Api
+        type: string
+      base_url:
+        title: Base Url
+        type: string
+      api_key:
+        format: password
+        title: Api Key
+        type: string
+        writeOnly: true
+    required:
+    - base_url
+    - api_key
+    title: ProviderSettings
+    type: object
+  RetentionSettings:
+    additionalProperties: false
+    description: How long data outlives its use.
+    properties:
+      checkpoints:
+        default: P30D
+        description: Checkpoints of a hibernated workspace.
+        format: duration
+        title: Checkpoints
+        type: string
+      deleted:
+        default: P30D
+        description: A deleted chat with everything it owns, before it is purged.
+        format: duration
+        title: Deleted
+        type: string
+      executions:
+        default: P30D
+        description: API executions and their artifacts.
+        format: duration
+        title: Executions
+        type: string
+    title: RetentionSettings
+    type: object
+  S3Settings:
+    additionalProperties: false
+    description: S3-compatible object storage.
+    properties:
+      endpoint_url:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: Custom endpoint such as RustFS. ``null`` selects AWS S3.
+        title: Endpoint Url
+      region:
+        default: us-east-1
+        title: Region
+        type: string
+      addressing_style:
+        default: path
+        description: Bucket addressing. Self-hosted endpoints usually require ``path``.
+        enum:
+        - path
+        - virtual
+        title: Addressing Style
+        type: string
+      access_key_id:
+        format: password
+        title: Access Key Id
+        type: string
+        writeOnly: true
+      secret_access_key:
+        format: password
+        title: Secret Access Key
+        type: string
+        writeOnly: true
+      artifacts_bucket:
+        default: xavier-artifacts
+        description: Artifacts, screenshots, large results and agent session snapshots.
+        title: Artifacts Bucket
+        type: string
+      temporal_bucket:
+        default: xavier-temporal
+        description: Large Temporal payloads offloaded by External Storage.
+        title: Temporal Bucket
+        type: string
+      temporal_payload_ttl_days:
+        default: 90
+        description: 'Lifecycle expiration of the Temporal bucket.
+
+
+          Temporal never deletes offloaded payloads, so the bucket expires them. The
+          value must exceed
+
+          the longest workflow run plus the namespace retention period.'
+        minimum: 1
+        title: Temporal Payload Ttl Days
+        type: integer
+    required:
+    - access_key_id
+    - secret_access_key
+    title: S3Settings
+    type: object
+  TelemetrySettings:
+    additionalProperties: false
+    description: OpenTelemetry traces and metrics.
+    properties:
+      otlp_endpoint:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
+        description: OTLP/gRPC collector, e.g. ``http://otel-collector:4317``. ``null``
+          exports nothing.
+        title: Otlp Endpoint
+      service_name:
+        default: xavier
+        description: Prefix of the service names; the process name follows, e.g. ``xavier-api``.
+        title: Service Name
+        type: string
+    title: TelemetrySettings
+    type: object
+  TemporalSettings:
+    additionalProperties: false
+    description: Temporal Service connection.
+    properties:
+      address:
+        default: 127.0.0.1:7233
+        title: Address
+        type: string
+      namespace:
+        default: default
+        title: Namespace
+        type: string
+      task_queue:
+        default: xavier
+        description: Shared task queue for work that is not bound to a host.
+        title: Task Queue
+        type: string
+      payload_size_threshold:
+        default: 262144
+        description: Payloads of at least this many bytes are offloaded to the Temporal
+          bucket.
+        minimum: 0
+        title: Payload Size Threshold
+        type: integer
+    title: TemporalSettings
+    type: object
+  TurnSettings:
+    additionalProperties: false
+    description: Limits of one agent turn.
+    properties:
+      timeout:
+        default: PT30M
+        format: duration
+        title: Timeout
+        type: string
+      max_steps:
+        default: 50
+        description: Step limit stored on a new chat when the request omits it.
+        minimum: 1
+        title: Max Steps
+        type: integer
+      stop_grace:
+        default: PT10S
+        description: Time running actions get to finish when a turn stops.
+        format: duration
+        title: Stop Grace
+        type: string
+    title: TurnSettings
+    type: object
+  WorkerSettings:
+    additionalProperties: false
+    description: 'The ``worker`` process: Temporal worker, MCP gateway and the internal
+      server.'
+    properties:
+      id:
+        description: Stable host identity; names the host task queue. Defaults to
+          the hostname.
+        title: Id
+        type: string
+      max_workspaces:
+        default: 8
+        description: Active workspaces this host keeps at most.
+        minimum: 1
+        title: Max Workspaces
+        type: integer
+      internal_host:
+        default: 127.0.0.1
+        description: 'Listen address of the internal server for ``api``.
+
+
+          A wildcard address (``0.0.0.0``, ``::``) is advertised to ``api`` as the
+          worker id, which must
+
+          then resolve to this host, as a compose service name does.'
+        title: Internal Host
+        type: string
+      internal_port:
+        default: 8081
+        description: Listen port of the internal server.
+        maximum: 65535
+        minimum: 1
+        title: Internal Port
+        type: integer
+      internal_token:
+        description: Token ``api`` presents to the internal server.
+        format: password
+        title: Internal Token
+        type: string
+        writeOnly: true
+      max_concurrent_activities:
+        default: 32
+        description: Activities this worker runs at once on each task queue.
+        minimum: 1
+        title: Max Concurrent Activities
+        type: integer
+    required:
+    - internal_token
+    title: WorkerSettings
+    type: object
+  WorkspaceSettings:
+    additionalProperties: false
+    description: The chat's ``/workspace`` and ``home`` volumes.
+    properties:
+      idle_ttl:
+        default: PT15M
+        description: Idle time after the last tool call that used the workspace before
+          it hibernates.
+        format: duration
+        title: Idle Ttl
+        type: string
+      size_limit:
+        anyOf:
+        - pattern: ^\s*(\d*\.?\d+)\s*(\w+)?
+          type: string
+        - minimum: 0
+          type: integer
+        default: 2147483648
+        description: Limit of both volumes together.
+        title: Size Limit
+    title: WorkspaceSettings
+    type: object
+additionalProperties: false
+description: Complete Xavier configuration.
+properties:
+  api:
+    $ref: '#/$defs/ApiSettings'
+    default:
+      host: 127.0.0.1
+      port: 8000
+      forwarded_allow_ips: []
+  auth:
+    $ref: '#/$defs/AuthSettings'
+    default:
+      session_ttl: P30D
+      session_idle_ttl: P7D
+  worker:
+    $ref: '#/$defs/WorkerSettings'
+  database:
+    $ref: '#/$defs/DatabaseSettings'
+  s3:
+    $ref: '#/$defs/S3Settings'
+  temporal:
+    $ref: '#/$defs/TemporalSettings'
+    default:
+      address: 127.0.0.1:7233
+      namespace: default
+      task_queue: xavier
+      payload_size_threshold: 262144
+  logging:
+    $ref: '#/$defs/LoggingSettings'
+    default:
+      level: INFO
+      format: json
+  agent:
+    $ref: '#/$defs/AgentSettings'
+  turn:
+    $ref: '#/$defs/TurnSettings'
+    default:
+      timeout: PT30M
+      max_steps: 50
+      stop_grace: PT10S
+  approval:
+    $ref: '#/$defs/ApprovalSettings'
+    default:
+      hot_wait: PT2M
+      ttl: P1D
+  chat:
+    $ref: '#/$defs/ChatSettings'
+    default:
+      idle_ttl: P7D
+      default_mode: supervised
+      default_budget_usd: 5.0
+  proactive:
+    $ref: '#/$defs/ProactiveSettings'
+    default:
+      max_wakeups_per_day: 24
+      min_interval: PT10M
+      budget_usd_per_wake: 0.5
+      max_pending_wakeups: 10
+      max_delay: P30D
+  workspace:
+    $ref: '#/$defs/WorkspaceSettings'
+    default:
+      idle_ttl: PT15M
+      size_limit: 2147483648
+  execute:
+    $ref: '#/$defs/ExecuteSettings'
+    default:
+      image: xavier-sandbox:local
+      runtime: runc
+      max_duration: PT10M
+      cpus: 1.0
+      memory: 1073741824
+      pids: 256
+      tmp_size: 268435456
+      output_limit: 1048576
+  computer:
+    $ref: '#/$defs/ComputerSettings'
+    default:
+      image: xavier-desktop:local
+      pool_size: 1
+      cpus: 2.0
+      memory: 2147483648
+      pids: 512
+      control_ttl: PT10M
+  observe:
+    $ref: '#/$defs/ObserveSettings'
+  retention:
+    $ref: '#/$defs/RetentionSettings'
+    default:
+      checkpoints: P30D
+      deleted: P30D
+      executions: P30D
+  telemetry:
+    $ref: '#/$defs/TelemetrySettings'
+    default:
+      otlp_endpoint: null
+      service_name: xavier
+required:
+- worker
+- database
+- s3
+- agent
+- observe
+title: Settings
+type: object

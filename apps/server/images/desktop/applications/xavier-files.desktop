@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Files
+Exec=pcmanfm /workspace
+Icon=folder
+Categories=System;FileManager;

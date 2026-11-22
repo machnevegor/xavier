@@ -1,0 +1,1 @@
+"""Artifacts REST package."""

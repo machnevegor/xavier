@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Terminal
+Exec=xterm -fa "DejaVu Sans Mono" -fs 11 -bg "#1e1e2e" -fg "#cdd6f4"
+Path=/workspace
+Icon=/opt/xavier/terminal.svg
+Categories=System;TerminalEmulator;

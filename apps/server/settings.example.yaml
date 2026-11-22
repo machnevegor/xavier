@@ -1,0 +1,167 @@
+# Copy to settings.yaml. Addresses are for processes on the host; Docker Compose overrides
+# them with XAVIER_* variables.
+
+api:
+  host: 127.0.0.1
+  port: 8000
+  forwarded_allow_ips: []
+
+# Users are created with `xavier users create <username>`.
+auth:
+  session_ttl: P30D
+  session_idle_ttl: P7D
+
+worker:
+  max_workspaces: 8
+  internal_host: 127.0.0.1
+  internal_port: 8081
+  internal_token: dev-internal-token
+  max_concurrent_activities: 32
+
+database:
+  host: 127.0.0.1
+  port: 5432
+  name: xavier
+  user: xavier
+  password: xavier
+
+s3:
+  endpoint_url: http://127.0.0.1:9000
+  region: us-east-1
+  addressing_style: path
+  access_key_id: xavier
+  secret_access_key: xavier-secret
+  artifacts_bucket: xavier-artifacts
+  temporal_bucket: xavier-temporal
+  temporal_payload_ttl_days: 90
+
+temporal:
+  address: 127.0.0.1:7233
+  namespace: default
+  task_queue: xavier
+  payload_size_threshold: 262144
+
+logging:
+  level: INFO
+  format: console
+
+agent:
+  # Writable on the host; the image uses /var/lib/xavier/agent.
+  cwd: /tmp/xavier/agent
+  providers:
+    openrouter:
+      api: openai-completions
+      base_url: https://openrouter.ai/api/v1
+      api_key: sk-or-replace-me
+  # Shown to chats in this order. The first reasoning level is a model's default.
+  models:
+    - id: deepseek-v4.1-flash
+      provider: openrouter
+      provider_model: deepseek/deepseek-v4.1-flash
+      input: [text, image]
+      thinking_format: deepseek
+      reasoning_levels: { "off": null, low: low, high: high, max: max }
+      pricing_per_mtok: { input: 0.0507, output: 0.2028, cache_read: 0.001014 }
+    - id: gpt-6-luna
+      provider: openrouter
+      provider_model: openai/gpt-6-luna
+      input: [text, image]
+      reasoning_levels: { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
+      pricing_per_mtok: { input: 0.1, output: 0.5, cache_read: 0.01 }
+    - id: gpt-6-sol
+      provider: openrouter
+      provider_model: openai/gpt-6-sol
+      input: [text, image]
+      reasoning_levels: { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
+      pricing_per_mtok: { input: 2.0, output: 10.0, cache_read: 0.2 }
+    - id: gpt-6-astra
+      provider: openrouter
+      provider_model: openai/gpt-6-astra
+      input: [text, image]
+      reasoning_levels: { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
+      pricing_per_mtok: { input: 10.0, output: 50.0, cache_read: 1.0 }
+    - id: claude-sonnet-5.5
+      provider: openrouter
+      provider_model: anthropic/claude-sonnet-5.5
+      input: [text, image]
+      reasoning_levels: { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
+      pricing_per_mtok: { input: 2.0, output: 10.0, cache_read: 0.1 }
+    - id: claude-opus-5.5
+      provider: openrouter
+      provider_model: anthropic/claude-opus-5.5
+      input: [text, image]
+      reasoning_levels: { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
+      pricing_per_mtok: { input: 4.0, output: 20.0, cache_read: 0.2 }
+    - id: claude-fable-5.2
+      provider: openrouter
+      provider_model: anthropic/claude-fable-5.2
+      input: [text, image]
+      reasoning_levels: { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
+      pricing_per_mtok: { input: 8.0, output: 40.0, cache_read: 0.2 }
+    - id: gemini-3.5-flash
+      provider: openrouter
+      provider_model: google/gemini-3.5-flash
+      input: [text, image]
+      reasoning_levels: { medium: medium, minimal: minimal, low: low, high: high }
+      pricing_per_mtok: { input: 1.5, output: 9.0, cache_read: 0.15 }
+    - id: gemini-4-carbon
+      provider: openrouter
+      provider_model: google/gemini-4-carbon
+      input: [text, image]
+      reasoning_levels: { medium: medium, low: low, high: high }
+      pricing_per_mtok: { input: 2.0, output: 10.0, cache_read: 0.1 }
+  default_model: deepseek-v4.1-flash
+
+turn:
+  timeout: PT30M
+  max_steps: 50
+  stop_grace: PT10S
+
+approval:
+  hot_wait: PT2M
+  ttl: PT24H
+
+chat:
+  idle_ttl: P7D
+  default_mode: supervised
+  default_budget_usd: 5.0
+
+workspace:
+  idle_ttl: PT15M
+  size_limit: 2GiB
+
+execute:
+  image: xavier-sandbox:local
+  runtime: runc
+  max_duration: PT10M
+  cpus: 1.0
+  memory: 1GiB
+  pids: 256
+  tmp_size: 256MiB
+  output_limit: 1MiB
+
+computer:
+  image: xavier-desktop:local
+  pool_size: 1
+  cpus: 2.0
+  memory: 2GiB
+  pids: 512
+  control_ttl: PT10M
+
+observe:
+  # Development key only. Generate one with:
+  # uv run python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+  credentials_key: vBEIpEgikO_ICioUfkcoQ2wQc9mtSBVhuxtZW05nJqM=
+  max_response_bytes: 5MiB
+  fetch_timeout: PT30S
+  max_depth: 3
+  max_fanout: 100
+
+retention:
+  checkpoints: P30D
+  deleted: P30D
+  executions: P30D
+
+telemetry:
+  otlp_endpoint: null
+  service_name: xavier

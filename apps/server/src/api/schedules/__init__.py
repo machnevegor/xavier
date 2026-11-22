@@ -1,0 +1,1 @@
+"""Schedules REST package."""

@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Chromium
+Comment=Open a window of the Computer's browser
+Exec=socat -u /dev/null UNIX-CONNECT:/tmp/computerd.sock
+Icon=chromium
+Categories=Network;WebBrowser;

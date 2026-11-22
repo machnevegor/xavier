@@ -1,0 +1,83 @@
+# Dock of the Computer: launchers, a separator and the open windows, centered at the bottom.
+
+# Background 1: the dock
+rounded = 14
+border_width = 1
+border_sides = TBLR
+background_color = #1e1e2e 85
+border_color = #ffffff 18
+
+# Background 2: a hovered or pressed item
+rounded = 10
+border_width = 0
+background_color = #ffffff 14
+border_color = #000000 0
+background_color_hover = #ffffff 22
+border_color_hover = #000000 0
+background_color_pressed = #ffffff 30
+border_color_pressed = #000000 0
+
+# Background 3: the active window
+rounded = 10
+border_width = 0
+background_color = #ffffff 28
+border_color = #000000 0
+
+panel_items = L:T
+panel_size = 100% 56
+panel_shrink = 1
+panel_margin = 0 8
+panel_padding = 8 6 6
+panel_background_id = 1
+panel_position = bottom center horizontal
+panel_layer = top
+panel_monitor = all
+strut_policy = follow_size
+panel_dock = 0
+wm_menu = 0
+autohide = 0
+mouse_effects = 1
+mouse_hover_icon_asb = 100 0 10
+mouse_pressed_icon_asb = 100 0 0
+startup_notifications = 0
+
+launcher_padding = 0 0 6
+launcher_background_id = 0
+launcher_icon_background_id = 0
+launcher_icon_size = 34
+launcher_icon_theme = Adwaita
+launcher_tooltip = 1
+launcher_item_app = /usr/local/share/applications/chromium.desktop
+launcher_item_app = /usr/local/share/applications/xavier-terminal.desktop
+launcher_item_app = /usr/local/share/applications/xavier-files.desktop
+
+separator = new
+separator_background_id = 0
+separator_color = #ffffff 25
+separator_style = line
+separator_size = 1
+separator_padding = 4 8
+
+taskbar_mode = single_desktop
+taskbar_padding = 0 0 6
+taskbar_background_id = 0
+taskbar_active_background_id = 0
+taskbar_name = 0
+taskbar_hide_inactive_tasks = 0
+taskbar_hide_different_monitor = 0
+
+task_text = 0
+task_icon = 1
+task_centered = 1
+task_maximum_size = 44 44
+task_padding = 6 6 0
+task_tooltip = 1
+task_background_id = 2
+task_active_background_id = 3
+task_urgent_background_id = 3
+task_iconified_background_id = 2
+mouse_left = toggle_iconify
+mouse_middle = close
+mouse_right = none
+mouse_scroll_up = none
+mouse_scroll_down = none

@@ -1,0 +1,15 @@
+# Allowlist: the build context contains only what the image needs.
+*
+
+!.npmrc
+!messages/
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!project.inlang/
+!public/
+!src/
+!tsconfig.json
+!vite.config.ts
+
+**/*.test.ts

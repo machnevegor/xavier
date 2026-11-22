@@ -1,0 +1,48 @@
+{
+  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "includes": ["**", "!**/routeTree.gen.ts", "!public", "!src/components/ui"]
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "linter": {
+    "rules": {
+      "correctness": {
+        "useImportExtensions": "error"
+      },
+      "nursery": {
+        "useTailwindSortedClasses": {
+          "fix": "safe",
+          "level": "error"
+        }
+      }
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "noDuplicateClasses": {
+          "level": "on",
+          "options": {
+            "functions": ["cn", "cva"]
+          }
+        },
+        "useSortedAttributes": "on",
+        "useSortedPackageJson": "on",
+        "useSortedProperties": "on"
+      }
+    }
+  },
+  "formatter": {
+    "indentStyle": "space"
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "tailwind": { "mergeFunctions": ["cn"], "variantFunctions": ["cva"] }
+}

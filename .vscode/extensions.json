@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "astral-sh.ty",
+    "biomejs.biome",
+    "bradlc.vscode-tailwindcss",
+    "charliermarsh.ruff",
+    "esbenp.prettier-vscode",
+    "ms-python.python",
+    "ms-toolsai.jupyter",
+    "ms-vscode-remote.remote-containers",
+    "redhat.vscode-yaml",
+    "tamasfe.even-better-toml"
+  ]
+}

@@ -21,8 +21,12 @@ function chat(maxSteps: number | null): Chat {
 }
 
 describe("step limit", () => {
-  it("opens a new chat on 50 steps", () => {
-    expect(toChatSettings(DEFAULT_OPTIONS).max_steps).toBe(50);
+  it("opens a new chat on 100 steps in autonomous proactive mode", () => {
+    const settings = toChatSettings(DEFAULT_OPTIONS);
+    expect(settings.max_steps).toBe(100);
+    expect(settings.mode).toBe("autonomous");
+    expect(settings.proactive).toBe(true);
+    expect(settings.tool_groups).toEqual(["observe", "execute", "compute"]);
     expect(stepLimitReady(DEFAULT_OPTIONS)).toBe(true);
   });
 

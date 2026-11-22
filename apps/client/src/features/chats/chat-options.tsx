@@ -58,13 +58,13 @@ export interface ChatOptionsValue {
 export const DEFAULT_OPTIONS: ChatOptionsValue = {
   budget_usd: "",
   execute_network: true,
-  max_steps: "50",
+  max_steps: "100",
   max_steps_custom: "",
-  mode: "supervised",
+  mode: "autonomous",
   model: null,
-  proactive: false,
+  proactive: true,
   reasoning: null,
-  tool_groups: ["observe", "execute"],
+  tool_groups: ["observe", "execute", "compute"],
 };
 
 const LAST_OPTIONS_KEY = "xavier.new-chat-options";

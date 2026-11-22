@@ -1,0 +1,92 @@
+# This is a Docker Compose configuration for the server integration tests.
+
+# Note: apps/server/tests/integration/conftest.py matches the ports and credentials below.
+
+# Run all services with:
+#   docker compose -f docker-compose.test.yaml up -d --wait temporal rustfs
+#   docker compose -f docker-compose.test.yaml run --rm temporal-create-namespace
+# Tear everything down with:
+#   docker compose -f docker-compose.test.yaml down
+
+name: xavier-test
+
+services:
+  postgres:
+    image: postgres:18.7-trixie
+    environment:
+      POSTGRES_PASSWORD: test
+      XAVIER_DB_PASSWORD: test
+      TEMPORAL_DB_PASSWORD: test
+    volumes:
+      - ./scripts/postgres:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /var/lib/postgresql
+    ports:
+      - 127.0.0.1:35432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  temporal-setup-postgres:
+    image: temporalio/admin-tools:1.32.2
+    entrypoint: ["/bin/sh", "/scripts/temporal-setup-postgres.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SQL_PASSWORD: test
+    volumes:
+      - ./scripts/temporal:/scripts:ro
+
+  temporal:
+    image: temporalio/server:1.32.2
+    depends_on:
+      temporal-setup-postgres:
+        condition: service_completed_successfully
+    environment:
+      DB: postgres12
+      DB_PORT: "5432"
+      POSTGRES_SEEDS: postgres
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: test
+      BIND_ON_IP: 0.0.0.0
+      DYNAMIC_CONFIG_FILE_PATH: /etc/temporal/dynamicconfig.yaml
+    volumes:
+      - ./scripts/temporal/dynamicconfig.yaml:/etc/temporal/dynamicconfig.yaml:ro
+    ports:
+      - 127.0.0.1:17233:7233
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "7233"]
+      interval: 2s
+      timeout: 3s
+      retries: 60
+
+  temporal-create-namespace:
+    image: temporalio/admin-tools:1.32.2
+    entrypoint: ["/bin/sh", "/scripts/temporal-create-namespace.sh"]
+    depends_on:
+      temporal:
+        condition: service_healthy
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    volumes:
+      - ./scripts/temporal:/scripts:ro
+
+  rustfs:
+    image: rustfs/rustfs:1.0.6
+    environment:
+      RUSTFS_ACCESS_KEY: test
+      RUSTFS_SECRET_KEY: testsecret
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+    tmpfs:
+      - /data:uid=10001,gid=10001,mode=0700
+    ports:
+      - 127.0.0.1:19000:9000
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 30

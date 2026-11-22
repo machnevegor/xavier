@@ -1,0 +1,175 @@
+# This is a Docker Compose configuration for local development.
+
+# Note: start the infrastructure (infra/docker-compose.yml) first, and copy
+# apps/server/settings.example.yaml to apps/server/settings.yaml.
+
+# Run all services with:
+#   docker compose up -d --build
+# Tear everything down with:
+#   docker compose down
+
+# Service map:
+#   Web UI
+#     Endpoint:    http://localhost:8080 ($XAVIER_DOMAIN), http://127.0.0.1:8080
+#     Protocol:    HTTP
+#   REST API
+#     Endpoint:    http://localhost:8080/api/v1
+#     Protocol:    HTTP, SSE, WebSocket
+#     Swagger:     http://localhost:8080/api/v1/docs
+#     OpenAPI:     http://localhost:8080/api/v1/openapi.json
+
+name: xavier
+
+x-xavier-environment: &xavier-environment
+  XAVIER_LOGGING__FORMAT: json
+  XAVIER_DATABASE__HOST: postgres
+  XAVIER_DATABASE__PORT: "5432"
+  XAVIER_S3__ENDPOINT_URL: http://rustfs:9000
+  XAVIER_TEMPORAL__ADDRESS: temporal:7233
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+
+services:
+  firewall-init:
+    image: xavier-firewall:local
+    build: apps/server/images/firewall
+    environment:
+      XAVIER_SANDBOX_BRIDGE: xv-sandbox
+    network_mode: host
+    cap_drop: [ALL]
+    cap_add: [NET_ADMIN, NET_RAW]
+
+  server-migrate:
+    image: xavier:local
+    build: apps/server
+    command: ["migrate"]
+    environment: *xavier-environment
+    volumes:
+      - ./apps/server/settings.yaml:/etc/xavier/settings.yaml:ro
+    <<: *hardening
+
+  server-init-storage:
+    image: xavier:local
+    build: apps/server
+    command: ["init-storage"]
+    environment: *xavier-environment
+    volumes:
+      - ./apps/server/settings.yaml:/etc/xavier/settings.yaml:ro
+    <<: *hardening
+
+  server:
+    image: xavier:local
+    build: apps/server
+    command: ["api"]
+    depends_on:
+      server-migrate:
+        condition: service_completed_successfully
+      server-init-storage:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      <<: *xavier-environment
+      XAVIER_API__HOST: 0.0.0.0
+      XAVIER_API__PORT: "8000"
+      # Only Traefik reaches the server.
+      XAVIER_API__FORWARDED_ALLOW_IPS: '["*"]'
+    volumes:
+      - ./apps/server/settings.yaml:/etc/xavier/settings.yaml:ro
+    tmpfs:
+      - /tmp
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.server.rule: (Host(`${XAVIER_DOMAIN:-localhost}`) || Host(`127.0.0.1`)) && PathPrefix(`/api/v1`)
+      traefik.http.routers.server.entrypoints: web
+      traefik.http.services.server.loadbalancer.server.port: "8000"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    <<: *hardening
+
+  worker:
+    image: xavier:local
+    build: apps/server
+    command: ["worker"]
+    depends_on:
+      server:
+        condition: service_healthy
+      firewall-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    environment:
+      <<: *xavier-environment
+      # The server reaches the worker's internal server by this name.
+      XAVIER_WORKER__ID: worker
+      XAVIER_WORKER__INTERNAL_HOST: 0.0.0.0
+    volumes:
+      - ./apps/server/settings.yaml:/etc/xavier/settings.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    tmpfs:
+      # Harness loads its native addons from here.
+      - /tmp:exec
+      - /var/lib/xavier/agent:uid=10001,gid=10001
+    healthcheck:
+      disable: true
+    # Docker socket group: `stat -c %g /var/run/docker.sock` on Linux, 0 on Docker Desktop.
+    group_add: ["${DOCKER_GID:-0}"]
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    <<: *hardening
+
+  client:
+    image: xavier-client:local
+    build: apps/client
+    restart: unless-stopped
+    tmpfs:
+      - /tmp
+    labels:
+      traefik.enable: "true"
+      # Keeps /api off the client even while the server is down.
+      traefik.http.routers.client.rule: (Host(`${XAVIER_DOMAIN:-localhost}`) || Host(`127.0.0.1`)) && !PathPrefix(`/api`)
+      traefik.http.routers.client.entrypoints: web
+      traefik.http.services.client.loadbalancer.server.port: "3000"
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    <<: *hardening
+
+  traefik:
+    image: traefik:v3.7.19
+    restart: unless-stopped
+    # Static configuration in variables, so `traefik healthcheck` reads it too.
+    environment:
+      TRAEFIK_ENTRYPOINTS_WEB_ADDRESS: ":8080"
+      TRAEFIK_PING: "true"
+      TRAEFIK_PING_ENTRYPOINT: web
+      TRAEFIK_PROVIDERS_DOCKER: "true"
+      TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT: "false"
+      TRAEFIK_PROVIDERS_DOCKER_CONSTRAINTS: Label(`com.docker.compose.project`, `xavier`)
+      TRAEFIK_GLOBAL_CHECKNEWVERSION: "false"
+      TRAEFIK_GLOBAL_SENDANONYMOUSUSAGE: "false"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - 127.0.0.1:8080:8080
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+    <<: *hardening
+
+networks:
+  default:
+    name: xavier
+    external: true

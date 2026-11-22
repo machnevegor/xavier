@@ -552,6 +552,16 @@ $defs:
         description: OTLP/gRPC collector, e.g. ``http://otel-collector:4317``. ``null``
           exports nothing.
         title: Otlp Endpoint
+      api_key:
+        anyOf:
+        - format: password
+          type: string
+          writeOnly: true
+        - type: 'null'
+        default: null
+        description: Ingestion key sent as the ``authorization`` header. ``null`` sends
+          none.
+        title: Api Key
       service_name:
         default: xavier
         description: Prefix of the service names; the process name follows, e.g. ``xavier-api``.

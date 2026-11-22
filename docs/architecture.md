@@ -183,8 +183,8 @@ Temporal answer).
   uses the cookie, which also authorizes SSE and the screen WebSocket. Programs
   send `Authorization: Bearer xv_…`, an API key whose full value is returned
   once, at creation, and stored only as a hash. Listing and revoking sessions
-  (`/sessions`) and API keys (`/api-keys`) require that cookie; an API key gets
-  403. Every resource is scoped to its owner (`created_by`); another user's
+  (`/sessions`) and API keys (`/api-keys`) require that cookie; an API key
+  gets 403. Every resource is scoped to its owner (`created_by`); another user's
   resource is 404. A user-editable record also returns `updated_by`, the last
   user who changed it, or null when none has. Spending, polling and credential
   use do not change that field. Sessions last `auth.session_ttl` (P30D) and end

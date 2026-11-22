@@ -327,7 +327,10 @@ class TelemetrySettings(_Section):
     """OpenTelemetry traces and metrics."""
 
     otlp_endpoint: str | None = None
-    """OTLP/gRPC collector, e.g. ``http://otel-collector:4317``. ``null`` exports nothing."""
+    """Collector address. ``https://host`` is OTLP/HTTP (``/v1/traces`` and ``/v1/metrics``);
+    ``host:4317`` is OTLP/gRPC. ``null`` exports nothing."""
+    api_key: SecretStr | None = None
+    """Ingestion key sent as the ``authorization`` header. ``null`` sends none."""
     service_name: str = "xavier"
     """Prefix of the service names; the process name follows, e.g. ``xavier-api``."""
 

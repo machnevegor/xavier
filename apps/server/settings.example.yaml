@@ -66,43 +66,50 @@ agent:
       provider: openrouter
       provider_model: openai/gpt-6-luna
       input: [text, image]
-      reasoning_levels: { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
+      reasoning_levels:
+        { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
       pricing_per_mtok: { input: 0.1, output: 0.5, cache_read: 0.01 }
     - id: gpt-6-sol
       provider: openrouter
       provider_model: openai/gpt-6-sol
       input: [text, image]
-      reasoning_levels: { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
+      reasoning_levels:
+        { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
       pricing_per_mtok: { input: 2.0, output: 10.0, cache_read: 0.2 }
     - id: gpt-6-astra
       provider: openrouter
       provider_model: openai/gpt-6-astra
       input: [text, image]
-      reasoning_levels: { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
+      reasoning_levels:
+        { medium: medium, low: low, high: high, xhigh: xhigh, max: max }
       pricing_per_mtok: { input: 10.0, output: 50.0, cache_read: 1.0 }
     - id: claude-sonnet-5.5
       provider: openrouter
       provider_model: anthropic/claude-sonnet-5.5
       input: [text, image]
-      reasoning_levels: { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
+      reasoning_levels:
+        { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
       pricing_per_mtok: { input: 2.0, output: 10.0, cache_read: 0.1 }
     - id: claude-opus-5.5
       provider: openrouter
       provider_model: anthropic/claude-opus-5.5
       input: [text, image]
-      reasoning_levels: { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
+      reasoning_levels:
+        { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
       pricing_per_mtok: { input: 4.0, output: 20.0, cache_read: 0.2 }
     - id: claude-fable-5.2
       provider: openrouter
       provider_model: anthropic/claude-fable-5.2
       input: [text, image]
-      reasoning_levels: { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
+      reasoning_levels:
+        { high: high, low: low, medium: medium, xhigh: xhigh, max: max }
       pricing_per_mtok: { input: 8.0, output: 40.0, cache_read: 0.2 }
     - id: gemini-3.5-flash
       provider: openrouter
       provider_model: google/gemini-3.5-flash
       input: [text, image]
-      reasoning_levels: { medium: medium, minimal: minimal, low: low, high: high }
+      reasoning_levels:
+        { medium: medium, minimal: minimal, low: low, high: high }
       pricing_per_mtok: { input: 1.5, output: 9.0, cache_read: 0.15 }
     - id: gemini-4-carbon
       provider: openrouter
@@ -164,4 +171,5 @@ retention:
 
 telemetry:
   otlp_endpoint: null
+  api_key: null
   service_name: xavier

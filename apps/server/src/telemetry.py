@@ -5,8 +5,18 @@ import time
 from collections.abc import Awaitable, Callable
 
 from opentelemetry import metrics, trace
-from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import (
+    OTLPMetricExporter as GrpcMetricExporter,
+)
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+    OTLPSpanExporter as GrpcSpanExporter,
+)
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import (
+    OTLPMetricExporter as HttpMetricExporter,
+)
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+    OTLPSpanExporter as HttpSpanExporter,
+)
 from opentelemetry.metrics import Histogram
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
@@ -56,14 +66,31 @@ def configure_telemetry(settings: TelemetrySettings, process: str) -> None:
     """Export traces and metrics of ``process`` when an OTLP endpoint is configured."""
     if settings.otlp_endpoint is None:
         return
+    traces, metrics_exporter = _exporters(settings)
     resource = Resource.create({SERVICE_NAME: f"{settings.service_name}-{process}"})
     tracer_provider = TracerProvider(resource=resource)
-    tracer_provider.add_span_processor(
-        BatchSpanProcessor(OTLPSpanExporter(endpoint=settings.otlp_endpoint))
-    )
+    tracer_provider.add_span_processor(BatchSpanProcessor(traces))
     trace.set_tracer_provider(tracer_provider)
-    reader = PeriodicExportingMetricReader(OTLPMetricExporter(endpoint=settings.otlp_endpoint))
+    reader = PeriodicExportingMetricReader(metrics_exporter)
     metrics.set_meter_provider(MeterProvider(resource=resource, metric_readers=[reader]))
+
+
+def _exporters(settings: TelemetrySettings) -> tuple[GrpcSpanExporter | HttpSpanExporter, object]:
+    """Build the span and metric exporters for the configured collector."""
+    endpoint = settings.otlp_endpoint or ""
+    token = None if settings.api_key is None else settings.api_key.get_secret_value()
+    if endpoint.startswith(("http://", "https://")):
+        base = endpoint.rstrip("/")
+        headers = {} if token is None else {"authorization": token}
+        return (
+            HttpSpanExporter(endpoint=f"{base}/v1/traces", headers=headers),
+            HttpMetricExporter(endpoint=f"{base}/v1/metrics", headers=headers),
+        )
+    headers_grpc = None if token is None else (("authorization", token),)
+    return (
+        GrpcSpanExporter(endpoint=endpoint, headers=headers_grpc),
+        GrpcMetricExporter(endpoint=endpoint, headers=headers_grpc),
+    )
 
 
 def traced[**P, R](

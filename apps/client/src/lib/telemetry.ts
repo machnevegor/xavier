@@ -7,9 +7,8 @@ const listeners = new Set<() => void>();
  * Start browser telemetry when the build configures it.
  *
  * The SDK is loaded on demand, so it stays out of the initial bundle and a failure to load it
- * never affects the app. It records traces and errors only: no session replay, no console
- * output, and no request or response headers or bodies, so operator data and credentials on
- * screen or in API calls are never sent.
+ * never affects the app. Session replay, console capture and traces use the HyperDX defaults;
+ * typed input values are masked.
  */
 export function startTelemetry(): void {
   const {
@@ -28,22 +27,16 @@ export function startTelemetry(): void {
   import("@hyperdx/browser")
     .then(({ default: HyperDX }) => {
       HyperDX.init({
-        advancedNetworkCapture: false,
         apiKey,
-        consoleCapture: false,
-        disableIntercom: true,
-        disableReplay: true,
-        maskAllInputs: true,
-        maskAllText: true,
-        otelResourceAttributes: { "deployment.environment.name": MODE },
-        recordCanvas: false,
+        url,
         service,
         tracePropagationTargets: [
           new RegExp(
             `^${window.location.origin.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}/api/`,
           ),
         ],
-        url,
+        maskAllInputs: true,
+        otelResourceAttributes: { "deployment.environment.name": MODE },
       });
       sessionId = HyperDX.getSessionId();
       for (const listener of listeners) {
